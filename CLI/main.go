@@ -1,16 +1,20 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
 
-const BL = 10 // Board Length
-const BH = 10 // Board Height
+	"github.com/nsf/termbox-go"
+)
+
+var BL = 120 // Board Length
+var BH = 10  // Board Height
 
 /*
 la struttura snake è formata da una coda di N nodi
 ciascuno con delle coordinate
 */
 type board struct {
-	xy [BL][BH]string
+	xy [][]string
 }
 
 type node struct {
@@ -23,11 +27,13 @@ type snake struct {
 }
 
 // global variables
-var b board
-var s snake
+var b *board = new(board)
+var s *snake = new(snake)
 
 // init the snake with length of 2, centered.
 func init_snake() {
+	s.hx = BL/2 - 1
+	s.hy = BH / 2
 	n2 := node{x: BL/2 + 1, y: BH / 2, next: nil}
 	n1 := node{x: BL / 2, y: BH / 2, next: &n2}
 	s.first = &n1
@@ -35,14 +41,12 @@ func init_snake() {
 }
 
 func draw() {
-	fmt.Printf("---Snake---\n")
-	for i := 0; i < BL; i++ {
-		for j := 0; j < BH; j++ {
-			fmt.Printf("%s", b.xy[i][j])
-			if i == BL {
-				fmt.Printf("\n")
-			}
+	fmt.Printf("\033[1;0H")
+	for y := 0; y < BH; y++ {
+		for x := 0; x < BL; x++ {
+			fmt.Printf("%s", b.xy[x][y])
 		}
+		fmt.Printf("\n")
 	}
 }
 
@@ -92,12 +96,24 @@ func input_sampler() {
 }
 
 func main() {
-	fmt.Printf("ciao")
+	if err := termbox.Init(); err != nil {
+		panic(err)
+	}
+	w, h := termbox.Size()
+	termbox.Close()
+	fmt.Println(w, h)
+	BL = w
+	BH = h - 1
 
 	// init board
+	b.xy = make([][]string, BL)
+	for i := range b.xy {
+		b.xy[i] = make([]string, BH)
+	}
+
 	for i := 0; i < BL; i++ {
 		for j := 0; j < BH; j++ {
-			if i == 0 || i == 9 || j == 0 || j == 9 {
+			if i == 0 || i == BL-1 || j == 0 || j == BH-1 {
 				b.xy[i][j] = "*"
 			} else {
 				b.xy[i][j] = " "
@@ -106,8 +122,13 @@ func main() {
 	}
 
 	init_snake()
+	//fmt.Printf("[MAIN] Init snake\n")
+
+	update_snake_position()
+	//fmt.Printf("[MAIN] Update snake position\n")
 
 	draw()
+	//fmt.Printf("[MAIN] Draw board\n")
 
 	//upadate_board()
 
