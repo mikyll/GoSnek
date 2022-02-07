@@ -10,7 +10,7 @@ la struttura snake è formata da una coda di N nodi
 ciascuno con delle coordinate
 */
 type board struct {
-	xy [10][10]string
+	xy [BL][BH]string
 }
 
 type node struct {
@@ -18,8 +18,8 @@ type node struct {
 	next *node
 }
 type snake struct {
-	heading int
-	first   *node
+	hx, hy int // the node where the snake is going
+	first  *node
 }
 
 // global variables
@@ -28,13 +28,22 @@ var s snake
 
 // init the snake with length of 2, centered.
 func init_snake() {
-	n1 := node{x: 10, y: 10, next: nil}
+	n2 := node{x: BL/2 + 1, y: BH / 2, next: nil}
+	n1 := node{x: BL / 2, y: BH / 2, next: &n2}
 	s.first = &n1
 
 }
 
-func draw(s snake) {
-
+func draw() {
+	fmt.Printf("---Snake---\n")
+	for i := 0; i < BL; i++ {
+		for j := 0; j < BH; j++ {
+			fmt.Printf("%s", b.xy[i][j])
+			if i == BL {
+				fmt.Printf("\n")
+			}
+		}
+	}
 }
 
 func upadate_board() {
@@ -42,10 +51,24 @@ func upadate_board() {
 	// precedente, tranne il primo, che va in
 	// direzione di heading
 
-	new_x := s.first.x
-	new_y := s.first.y
+}
 
-	b.xy[new_x][new_y] = "x"
+func update_snake_position() {
+	b.xy[s.hx][s.hy] = "x"
+	px := s.first.x
+	py := s.first.y
+	node := s.first.next
+	b.xy[px][py] = "x"
+	for {
+		if node.next != nil {
+			px = node.x
+			py = node.y
+			node = node.next
+			b.xy[px][py] = "x"
+		} else {
+			break
+		}
+	}
 }
 
 // goroutines
@@ -71,17 +94,22 @@ func input_sampler() {
 func main() {
 	fmt.Printf("ciao")
 
-	for i := 0; i < 10; i++ {
-		for j := 0; j < 10; j++ {
+	// init board
+	for i := 0; i < BL; i++ {
+		for j := 0; j < BH; j++ {
 			if i == 0 || i == 9 || j == 0 || j == 9 {
 				b.xy[i][j] = "*"
+			} else {
+				b.xy[i][j] = " "
 			}
 		}
 	}
 
 	init_snake()
 
-	upadate_board()
+	draw()
+
+	//upadate_board()
 
 	// goroutine che aggiorna ogni delta time
 	// la posizione dello snake nella mappa
