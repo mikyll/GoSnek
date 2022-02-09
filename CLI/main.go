@@ -10,27 +10,17 @@ import (
 	"golang.org/x/term"
 )
 
-const W = "w"
-const S = "s"
-const A = "a"
-const D = "d"
+// constants
+const UP = "w"
+const DOWN = "s"
+const LEFT = "a"
+const RIGHT = "d"
 const PAUSE = "p"
 const ESC = "q"
 const F_POINTS = 10
 const S_POINTS = 100
 
-var BL = 120 // Board Length
-var BH = 10  // Board Height
-
-var game_over = false
-var tot_points = 0
-
-var input_channel = make(chan string, 5)
-
-/*
-la struttura snake è formata da una coda di N nodi
-ciascuno con delle coordinate
-*/
+// structures
 type board struct {
 	xy [][]string
 }
@@ -40,7 +30,7 @@ type node struct {
 	next *node
 }
 type snake struct {
-	hx, hy int // the node where the snake is going
+	hx, hy int // snake direction
 	first  *node
 }
 
@@ -50,10 +40,19 @@ type fruit struct {
 }
 
 // global variables
+var BL = 0 // Board Length
+var BH = 0 // Board Height
+
+var game_over = false
+var tot_points = 0
+
 var b *board = new(board)
 var s *snake = new(snake)
 var f *fruit = new(fruit)
 
+var input_channel = make(chan string, 5)
+
+// functions
 func init_board() {
 	b.xy = make([][]string, BL)
 	for i := range b.xy {
@@ -71,7 +70,7 @@ func init_board() {
 	}
 }
 
-// init the snake with length of 2, centered.
+// init the snake with length of 4, in the center of the screen
 func init_snake() {
 	s.hx = -1
 	s.hy = 0
@@ -82,6 +81,7 @@ func init_snake() {
 	s.first = &n1
 }
 
+// spawn fruit in a random position inside the board
 func spawn_fruit() {
 	f.x = rand.Intn(BL-2) + 1
 	f.y = rand.Intn(BH-2) + 1
@@ -93,6 +93,7 @@ func spawn_fruit() {
 	b.xy[f.x][f.y] = f.value
 }
 
+// check if the snake has collected a fruit
 func collect_fruit() {
 	if s.first.x == f.x && s.first.y == f.y {
 		if f.value == "F" {
@@ -105,6 +106,7 @@ func collect_fruit() {
 	}
 }
 
+// add a snake node on the head
 func add_node(x, y int) {
 	n := node{x: x, y: y, next: s.first}
 	s.first = &n
@@ -120,10 +122,8 @@ func draw() {
 	}
 }
 
+// updates the snake inside the board
 func upadate_board() {
-	// nb: ogni nodo si sposta nella posizione del
-	// precedente, tranne il primo, che va in
-	// direzione di heading
 	var node *node
 
 	node = s.first.next
@@ -137,13 +137,11 @@ func upadate_board() {
 		} else {
 			break
 		}
-
 	}
-
 }
 
 func update_snake_position() {
-	// collision with snake
+	// checks for collision with snake
 	if b.xy[s.first.x+s.hx][s.first.y+s.hy] == "x" {
 		game_over = true
 		return
@@ -151,7 +149,7 @@ func update_snake_position() {
 	n := node{x: s.first.x + s.hx, y: s.first.y + s.hy, next: s.first}
 	s.first = &n
 
-	// collision with borders
+	// checks for collision with borders
 	if n.x == 0 || n.x == BL-1 || n.y == 0 || n.y == BH-1 {
 		game_over = true
 		return
@@ -188,22 +186,22 @@ func game() {
 		select {
 		case x := <-input_channel:
 			switch x {
-			case W:
+			case UP:
 				if s.hy != 1 {
 					s.hx = 0
 					s.hy = -1
 				}
-			case S:
+			case DOWN:
 				if s.hy != -1 {
 					s.hx = 0
 					s.hy = +1
 				}
-			case A:
+			case LEFT:
 				if s.hx != 1 {
 					s.hx = -1
 					s.hy = 0
 				}
-			case D:
+			case RIGHT:
 				if s.hx != -1 {
 					s.hx = +1
 					s.hy = 0
@@ -267,17 +265,6 @@ func input_sampler() {
 
 	}
 }
-func print_snake() {
-	node := s.first
-	for {
-		fmt.Printf("%v, ", node)
-		if node.next != nil {
-			node = node.next
-		} else {
-			break
-		}
-	}
-}
 
 func main() {
 	// Init rand seed
@@ -297,7 +284,7 @@ func main() {
 	defer term.Restore(int(os.Stdin.Fd()), oldState)
 
 	// read char
-	fmt.Printf("\033[H\033[2J\n---- CONTROLS ----\nw = up\ns = down\na = left\nd = right\n\np = pause\nq = quit\n\n\nChoose the difficulty by resizing the window.\nSmaller window leads to smaller map;\nfaster snake, bigger window leads to bigger map and slower snake.\n\n\n\nPress any key to start ...")
+	fmt.Printf("\033[H\033[2J\n---- CONTROLS ----\nw = up\ns = down\na = left\nd = right\n\np = pause\nq = quit\n\n\nChoose the difficulty by resizing the window.\nSmaller window leads to smaller board;\nfaster snake, bigger window leads to bigger board and slower snake.\n\n\n\nPress any key to start ...")
 	ch := make([]byte, 1)
 	_, err = os.Stdin.Read(ch)
 	if err != nil {
@@ -320,9 +307,4 @@ func main() {
 
 	fmt.Print("\033[H\033[2J")
 	fmt.Printf("\n\n\nGAME OVER\n\n\nTotal points: %d\n\n\n", tot_points)
-
-	// goroutine che aggiorna ogni delta time
-	// la posizione dello snake nella mappa
-
-	// goroutine che attende gli input dell'utente
 }
