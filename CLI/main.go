@@ -34,7 +34,8 @@ var s *snake = new(snake)
 func init_snake() {
 	s.hx = -1
 	s.hy = 0
-	n3 := node{x: BL/2 + 2, y: BH / 2, next: nil}
+	n4 := node{x: BL/2 + 3, y: BH / 2, next: nil}
+	n3 := node{x: BL/2 + 2, y: BH / 2, next: &n4}
 	n2 := node{x: BL/2 + 1, y: BH / 2, next: &n3}
 	n1 := node{x: BL / 2, y: BH / 2, next: &n2}
 	s.first = &n1
@@ -58,13 +59,59 @@ func upadate_board() {
 	// nb: ogni nodo si sposta nella posizione del
 	// precedente, tranne il primo, che va in
 	// direzione di heading
+	var node *node
+
+	node = s.first.next
+	b.xy[s.first.x][s.first.y] = "o"
+
+	for {
+		b.xy[node.x][node.y] = "x"
+		if node.next != nil {
+
+			node = node.next
+		} else {
+			break
+		}
+
+	}
 
 }
 
 func update_snake_position() {
-	var node_prev, node *node
+	n := node{x: s.first.x + s.hx, y: s.first.y + s.hy, next: s.first}
+	s.first = &n
 
-	node_prev = s.first
+	prev_node := s.first
+	node := s.first.next
+	for {
+		if node.next != nil {
+			prev_node = node
+			node = node.next
+		} else {
+			b.xy[node.x][node.y] = " "
+			prev_node.next = nil
+			break
+		}
+	}
+
+	return
+
+	s.first.next.x = s.first.x
+	s.first.next.y = s.first.y
+
+	s.first.x += s.hx
+	s.first.y += s.hy
+
+	s.first.next.next.x = s.first.next.x
+	s.first.next.next.y = s.first.next.y
+
+	b.xy[s.first.next.next.next.x][s.first.next.next.next.y] = " "
+	s.first.next.next.next.x = s.first.next.next.x
+	s.first.next.next.next.y = s.first.next.next.y
+
+	return
+
+	/*node_prev = s.first
 	node = s.first.next
 
 	// update head position
@@ -79,8 +126,6 @@ func update_snake_position() {
 	node = node.next
 
 	for {
-		// delete the old one
-		b.xy[node.x][node.y] = " "
 
 		// draw the new one
 		node.x = node_prev.x
@@ -100,7 +145,7 @@ func update_snake_position() {
 			node = nil
 			break
 		}
-	}
+	}*/
 }
 
 // goroutines
@@ -146,9 +191,9 @@ func input_sampler() {
 	}
 }
 func print_snake() {
+	node := s.first
 	for {
-		node := s.first
-		fmt.Printf("(%d,%d), ", node.x, node.y)
+		fmt.Printf("%v, ", node)
 		if node.next != nil {
 			node = node.next
 		} else {
@@ -189,12 +234,16 @@ func main() {
 	update_snake_position()
 	//fmt.Printf("[MAIN] Update snake position\n")
 
+	upadate_board()
+
 	draw()
+
 	//fmt.Printf("[MAIN] Draw board\n")
 
 	//upadate_board()
 	for {
 		update_snake_position()
+		upadate_board()
 		draw()
 		//print_snake()
 	}
