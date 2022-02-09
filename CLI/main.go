@@ -17,6 +17,8 @@ const ESC = "q"
 var BL = 120 // Board Length
 var BH = 10  // Board Height
 
+var game_over = false
+
 var input_channel = make(chan string, 5)
 
 /*
@@ -91,6 +93,11 @@ func update_snake_position() {
 	n := node{x: s.first.x + s.hx, y: s.first.y + s.hy, next: s.first}
 	s.first = &n
 
+	if n.x == 0 || n.x == BL-1 || n.y == 0 || n.y == BH-1 {
+		game_over = true
+		return
+	}
+
 	prev_node := s.first
 	node := s.first.next
 	for {
@@ -161,7 +168,7 @@ func update_snake_position() {
 // goroutines
 func game() {
 
-	for {
+	for !game_over {
 		update_snake_position()
 		upadate_board()
 		draw()
@@ -170,17 +177,25 @@ func game() {
 		case x := <-input_channel:
 			switch x {
 			case W:
-				s.hx = 0
-				s.hy = -1
+				if s.hy != 1 {
+					s.hx = 0
+					s.hy = -1
+				}
 			case S:
-				s.hx = 0
-				s.hy = +1
+				if s.hy != -1 {
+					s.hx = 0
+					s.hy = +1
+				}
 			case A:
-				s.hx = -1
-				s.hy = 0
+				if s.hx != 1 {
+					s.hx = -1
+					s.hy = 0
+				}
 			case D:
-				s.hx = +1
-				s.hy = 0
+				if s.hx != -1 {
+					s.hx = +1
+					s.hy = 0
+				}
 			case ESC:
 				return
 			default:
@@ -269,6 +284,9 @@ func main() {
 	//upadate_board()
 	go input_sampler()
 	game()
+
+	fmt.Print("\033[H\033[2J")
+	fmt.Printf("\n\n\nGAME OVER\n\n\n")
 
 	// goroutine che aggiorna ogni delta time
 	// la posizione dello snake nella mappa
