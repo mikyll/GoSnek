@@ -2,12 +2,22 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/nsf/termbox-go"
+	"golang.org/x/term"
 )
+
+const W = "w"
+const S = "s"
+const A = "a"
+const D = "d"
+const ESC = "q"
 
 var BL = 120 // Board Length
 var BH = 10  // Board Height
+
+var input_channel = make(chan string, 5)
 
 /*
 la struttura snake è formata da una coda di N nodi
@@ -149,21 +159,35 @@ func update_snake_position() {
 }
 
 // goroutines
-func updater() {
-	// update snake position
-	b.xy[s.hx][s.hy] = "x"
-	px := s.first.x
-	py := s.first.y
-	node := s.first.next
-	b.xy[px][py] = "x"
+func game() {
+
 	for {
-		if node.next != nil {
-			px = node.x
-			py = node.y
-			node = node.next
-			b.xy[px][py] = "x"
-		} else {
-			break
+		update_snake_position()
+		upadate_board()
+		draw()
+		// check if there are inputs
+		select {
+		case x := <-input_channel:
+			switch x {
+			case W:
+				s.hx = 0
+				s.hy = -1
+			case S:
+				s.hx = 0
+				s.hy = +1
+			case A:
+				s.hx = -1
+				s.hy = 0
+			case D:
+				s.hx = +1
+				s.hy = 0
+			case ESC:
+				return
+			default:
+				fmt.Printf("[INPUT] Input %d not valid.\n", x)
+			}
+		default:
+			continue
 		}
 	}
 }
@@ -171,23 +195,17 @@ func updater() {
 func input_sampler() {
 	for {
 		// read char
-		ch := 1
-		switch ch {
-		case 'W':
-			s.hx = -1
-			s.hy = 0
-		case 'S':
-			s.hx = +1
-			s.hy = 0
-		case 'A':
-			s.hy = -1
-			s.hx = 0
-		case 'D':
-			s.hy = +1
-			s.hx = 0
-		default:
-			fmt.Printf("[INPUT] Input %d not valid.\n", ch)
+		ch := make([]byte, 1)
+		_, err := os.Stdin.Read(ch)
+		if err != nil {
+			fmt.Println(err)
+			return
 		}
+		//fmt.Println(string(ch[0]))
+
+		// send on channel
+		input_channel <- string(ch[0])
+
 	}
 }
 func print_snake() {
@@ -211,6 +229,14 @@ func main() {
 	fmt.Println(w, h)
 	BL = w
 	BH = h - 1
+
+	// switch stdin into 'raw' mode
+	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer term.Restore(int(os.Stdin.Fd()), oldState)
 
 	// init board
 	b.xy = make([][]string, BL)
@@ -241,12 +267,8 @@ func main() {
 	//fmt.Printf("[MAIN] Draw board\n")
 
 	//upadate_board()
-	for {
-		update_snake_position()
-		upadate_board()
-		draw()
-		//print_snake()
-	}
+	go input_sampler()
+	game()
 
 	// goroutine che aggiorna ogni delta time
 	// la posizione dello snake nella mappa
