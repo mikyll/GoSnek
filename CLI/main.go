@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
+	"time"
 
 	"github.com/nsf/termbox-go"
 	"golang.org/x/term"
@@ -13,11 +15,14 @@ const S = "s"
 const A = "a"
 const D = "d"
 const ESC = "q"
+const F_POINTS = 10
+const S_POINTS = 100
 
 var BL = 120 // Board Length
 var BH = 10  // Board Height
 
 var game_over = false
+var tot_points = 0
 
 var input_channel = make(chan string, 5)
 
@@ -38,9 +43,15 @@ type snake struct {
 	first  *node
 }
 
+type fruit struct {
+	x, y  int
+	value string
+}
+
 // global variables
 var b *board = new(board)
 var s *snake = new(snake)
+var f *fruit = new(fruit)
 
 // init the snake with length of 2, centered.
 func init_snake() {
@@ -53,8 +64,32 @@ func init_snake() {
 	s.first = &n1
 }
 
-func add_node() {
-	// add a node as first and connect the actual first to it
+func spawn_fruit() {
+	f.x = rand.Intn(BL-2) + 1
+	f.y = rand.Intn(BH-2) + 1
+	if rand.Intn(100) < 10 {
+		f.value = "S"
+	} else {
+		f.value = "F"
+	}
+	b.xy[f.x][f.y] = f.value
+}
+
+func collect_fruit() {
+	if s.first.x == f.x && s.first.y == f.y {
+		if f.value == "F" {
+			tot_points += F_POINTS
+		} else {
+			tot_points += S_POINTS
+		}
+		add_node(f.x, f.y)
+		spawn_fruit()
+	}
+}
+
+func add_node(x, y int) {
+	n := node{x: x, y: y, next: s.first}
+	s.first = &n
 }
 
 func draw() {
@@ -90,9 +125,15 @@ func upadate_board() {
 }
 
 func update_snake_position() {
+	// collision with snake
+	if b.xy[s.first.x+s.hx][s.first.y+s.hy] == "x" {
+		game_over = true
+		return
+	}
 	n := node{x: s.first.x + s.hx, y: s.first.y + s.hy, next: s.first}
 	s.first = &n
 
+	// collision with borders
 	if n.x == 0 || n.x == BL-1 || n.y == 0 || n.y == BH-1 {
 		game_over = true
 		return
@@ -112,13 +153,19 @@ func update_snake_position() {
 	}
 }
 
+func show_points() {
+	fmt.Printf("Points: %d", tot_points)
+}
+
 // goroutines
 func game() {
 
 	for !game_over {
 		update_snake_position()
 		upadate_board()
+		collect_fruit()
 		draw()
+		show_points()
 		// check if there are inputs
 		select {
 		case x := <-input_channel:
@@ -146,7 +193,7 @@ func game() {
 			case ESC:
 				return
 			default:
-				fmt.Printf("[INPUT] Input %d not valid.\n", x)
+				fmt.Printf("[INPUT] Input %s not valid.\n", x)
 			}
 		default:
 			continue
@@ -183,12 +230,13 @@ func print_snake() {
 }
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
 	if err := termbox.Init(); err != nil {
 		panic(err)
 	}
 	w, h := termbox.Size()
 	termbox.Close()
-	fmt.Println(w, h)
+	//fmt.Println(w, h) // test
 	BL = w
 	BH = h - 1
 
@@ -199,6 +247,16 @@ func main() {
 		return
 	}
 	defer term.Restore(int(os.Stdin.Fd()), oldState)
+
+	// read char
+	fmt.Printf("\n---- CONTROLS ----\nw = up\ns = down\na = left\nd = right\n\nq = quit\n\nPress any key to start ...")
+	ch := make([]byte, 1)
+	_, err = os.Stdin.Read(ch)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(string(ch[0]))
 
 	// init board
 	b.xy = make([][]string, BL)
@@ -219,6 +277,8 @@ func main() {
 	init_snake()
 	//fmt.Printf("[MAIN] Init snake\n")
 
+	spawn_fruit()
+
 	update_snake_position()
 	//fmt.Printf("[MAIN] Update snake position\n")
 
@@ -233,7 +293,7 @@ func main() {
 	game()
 
 	fmt.Print("\033[H\033[2J")
-	fmt.Printf("\n\n\nGAME OVER\n\n\n")
+	fmt.Printf("\n\n\nGAME OVER\n\n\nTotal points: %d\n\n\n", tot_points)
 
 	// goroutine che aggiorna ogni delta time
 	// la posizione dello snake nella mappa
