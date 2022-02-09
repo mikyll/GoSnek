@@ -250,10 +250,17 @@ func game() {
 }
 
 func input_sampler() {
+	// switch stdin into 'raw' mode
+	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer term.Restore(int(os.Stdin.Fd()), oldState)
 	for {
 		// read char
 		ch := make([]byte, 1)
-		_, err := os.Stdin.Read(ch)
+		_, err = os.Stdin.Read(ch)
 		if err != nil {
 			fmt.Println(err)
 			return
