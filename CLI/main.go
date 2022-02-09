@@ -14,6 +14,7 @@ const W = "w"
 const S = "s"
 const A = "a"
 const D = "d"
+const PAUSE = "p"
 const ESC = "q"
 const F_POINTS = 10
 const S_POINTS = 100
@@ -52,6 +53,23 @@ type fruit struct {
 var b *board = new(board)
 var s *snake = new(snake)
 var f *fruit = new(fruit)
+
+func init_board() {
+	b.xy = make([][]string, BL)
+	for i := range b.xy {
+		b.xy[i] = make([]string, BH)
+	}
+
+	for i := 0; i < BL; i++ {
+		for j := 0; j < BH; j++ {
+			if i == 0 || i == BL-1 || j == 0 || j == BH-1 {
+				b.xy[i][j] = "*"
+			} else {
+				b.xy[i][j] = " "
+			}
+		}
+	}
+}
 
 // init the snake with length of 2, centered.
 func init_snake() {
@@ -190,10 +208,42 @@ func game() {
 					s.hx = +1
 					s.hy = 0
 				}
+			case PAUSE:
+				b.xy[BL/2-4][BH/2-1] = " "
+				b.xy[BL/2-3][BH/2-1] = " "
+				b.xy[BL/2-2][BH/2-1] = " "
+				b.xy[BL/2-1][BH/2-1] = " "
+				b.xy[BL/2][BH/2-1] = " "
+				b.xy[BL/2+1][BH/2-1] = " "
+				b.xy[BL/2+2][BH/2-1] = " "
+				b.xy[BL/2-4][BH/2] = " "
+				b.xy[BL/2-3][BH/2] = "P"
+				b.xy[BL/2-2][BH/2] = "A"
+				b.xy[BL/2-1][BH/2] = "U"
+				b.xy[BL/2][BH/2] = "S"
+				b.xy[BL/2+1][BH/2] = "E"
+				b.xy[BL/2+2][BH/2] = " "
+				b.xy[BL/2-4][BH/2+1] = " "
+				b.xy[BL/2-3][BH/2+1] = " "
+				b.xy[BL/2-2][BH/2+1] = " "
+				b.xy[BL/2-1][BH/2+1] = " "
+				b.xy[BL/2][BH/2+1] = " "
+				b.xy[BL/2+1][BH/2+1] = " "
+				b.xy[BL/2+2][BH/2+1] = " "
+				draw()
+				x = <-input_channel
+				if x == ESC {
+					return
+				}
+				b.xy[BL/2-3][BH/2] = " "
+				b.xy[BL/2-2][BH/2] = " "
+				b.xy[BL/2-1][BH/2] = " "
+				b.xy[BL/2][BH/2] = " "
+				b.xy[BL/2+1][BH/2] = " "
 			case ESC:
 				return
 			default:
-				fmt.Printf("[INPUT] Input %s not valid.\n", x)
+				fmt.Printf("[INPUT] Input %s not valid. Press 'q' to quit\n", x)
 			}
 		default:
 			continue
@@ -230,15 +280,13 @@ func print_snake() {
 }
 
 func main() {
+	// Init rand seed
 	rand.Seed(time.Now().UnixNano())
+
+	// Init termbox
 	if err := termbox.Init(); err != nil {
 		panic(err)
 	}
-	w, h := termbox.Size()
-	termbox.Close()
-	//fmt.Println(w, h) // test
-	BL = w
-	BH = h - 1
 
 	// switch stdin into 'raw' mode
 	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
@@ -249,46 +297,24 @@ func main() {
 	defer term.Restore(int(os.Stdin.Fd()), oldState)
 
 	// read char
-	fmt.Printf("\n---- CONTROLS ----\nw = up\ns = down\na = left\nd = right\n\nq = quit\n\nPress any key to start ...")
+	fmt.Printf("\033[H\033[2J\n---- CONTROLS ----\nw = up\ns = down\na = left\nd = right\n\np = pause\nq = quit\n\n\nChoose the difficulty by resizing the window.\nSmaller window leads to smaller map;\nfaster snake, bigger window leads to bigger map and slower snake.\n\n\n\nPress any key to start ...")
 	ch := make([]byte, 1)
 	_, err = os.Stdin.Read(ch)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println(string(ch[0]))
 
-	// init board
-	b.xy = make([][]string, BL)
-	for i := range b.xy {
-		b.xy[i] = make([]string, BH)
-	}
+	w, h := termbox.Size()
+	termbox.Close()
+	//fmt.Println(w, h) // test
+	BL = w
+	BH = h - 1
 
-	for i := 0; i < BL; i++ {
-		for j := 0; j < BH; j++ {
-			if i == 0 || i == BL-1 || j == 0 || j == BH-1 {
-				b.xy[i][j] = "*"
-			} else {
-				b.xy[i][j] = " "
-			}
-		}
-	}
-
+	init_board()
 	init_snake()
-	//fmt.Printf("[MAIN] Init snake\n")
-
 	spawn_fruit()
 
-	update_snake_position()
-	//fmt.Printf("[MAIN] Update snake position\n")
-
-	upadate_board()
-
-	draw()
-
-	//fmt.Printf("[MAIN] Draw board\n")
-
-	//upadate_board()
 	go input_sampler()
 	game()
 
