@@ -258,8 +258,8 @@ func input_sampler() {
 	}
 	defer term.Restore(int(os.Stdin.Fd()), oldState)
 	for {
-		// read char
 		ch := make([]byte, 1)
+		// read byte
 		_, err = os.Stdin.Read(ch)
 		if err != nil {
 			fmt.Println(err)
@@ -290,7 +290,6 @@ func main() {
 	}
 	defer term.Restore(int(os.Stdin.Fd()), oldState)
 
-	// read char
 	fmt.Printf("\033[H\033[2J\n---- CONTROLS ----\nw = up\ns = down\na = left\nd = right\n\np = pause\nq = quit\n\n\nChoose the difficulty by resizing the window.\nSmaller window leads to smaller board;\nfaster snake, bigger window leads to bigger board and slower snake.\n\n\n\nPress any key to start ...")
 	ch := make([]byte, 1)
 	_, err = os.Stdin.Read(ch)
