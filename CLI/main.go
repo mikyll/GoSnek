@@ -110,59 +110,6 @@ func update_snake_position() {
 			break
 		}
 	}
-
-	return
-
-	s.first.next.x = s.first.x
-	s.first.next.y = s.first.y
-
-	s.first.x += s.hx
-	s.first.y += s.hy
-
-	s.first.next.next.x = s.first.next.x
-	s.first.next.next.y = s.first.next.y
-
-	b.xy[s.first.next.next.next.x][s.first.next.next.next.y] = " "
-	s.first.next.next.next.x = s.first.next.next.x
-	s.first.next.next.next.y = s.first.next.next.y
-
-	return
-
-	/*node_prev = s.first
-	node = s.first.next
-
-	// update head position
-	node_prev.x += s.hx
-	node_prev.y += s.hy
-
-	// draw head & delete old position
-	b.xy[node_prev.x][node_prev.y] = "x"
-	b.xy[node.x][node.y] = " "
-
-	node_prev = node
-	node = node.next
-
-	for {
-
-		// draw the new one
-		node.x = node_prev.x
-		node.y = node_prev.y
-
-		b.xy[node.x][node.y] = "x"
-
-		if node.next != nil {
-			node_prev = node
-			node = node.next
-		} else {
-			// next one is null
-			// set this empty
-			b.xy[node.x][node.y] = " "
-
-			// set null pointer
-			node = nil
-			break
-		}
-	}*/
 }
 
 // goroutines
