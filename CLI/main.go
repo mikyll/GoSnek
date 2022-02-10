@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"os/exec"
+	"runtime"
 	"time"
 
 	"github.com/nsf/termbox-go"
@@ -40,8 +42,9 @@ type fruit struct {
 }
 
 // GLOBAL VARIABLES =================================================
-var BL = 0 // Board Length
-var BH = 0 // Board Height
+var OS = "" // Operating System
+var BL = 0  // Board Length
+var BH = 0  // Board Height
 
 var game_over = false
 var tot_points = 0
@@ -250,21 +253,31 @@ func game() {
 
 func input_sampler() {
 	// switch stdin into 'raw' mode
-	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
-	if err != nil {
-		fmt.Println(err)
+	switch {
+	case OS == "windows":
+		oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		defer term.Restore(int(os.Stdin.Fd()), oldState)
+	case OS == "darwin" || OS == "linux":
+		exec.Command("stty", "-F", "/dev/tty", "cbreak", "min", "1").Run() // disable input buffering
+		exec.Command("stty", "-F", "/dev/tty", "-echo").Run()              // do not display entered characters on the screen
+		defer exec.Command("stty", "-F", "/dev/tty", "echo").Run()
+	default:
+		fmt.Printf("%s.\n", OS)
 		return
 	}
-	defer term.Restore(int(os.Stdin.Fd()), oldState)
+	ch := make([]byte, 1)
+	var err error
 	for {
-		ch := make([]byte, 1)
 		// read byte
 		_, err = os.Stdin.Read(ch)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		//fmt.Println(string(ch[0]))
 
 		// send on channel
 		input_channel <- string(ch[0])
@@ -282,17 +295,41 @@ func main() {
 		panic(err)
 	}
 
-	// switch stdin into 'raw' mode
-	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
-	if err != nil {
-		fmt.Println(err)
+	// Check OS
+	OS = runtime.GOOS
+	switch OS {
+	case "windows":
+		fmt.Println("Windows")
+	case "darwin":
+		fmt.Println("MAC operating system")
+	case "linux":
+		fmt.Println("Linux")
+	default:
+		fmt.Printf("%s.\n", OS)
 		return
 	}
-	defer term.Restore(int(os.Stdin.Fd()), oldState)
+
+	// switch stdin into 'raw' mode
+	switch {
+	case OS == "windows":
+		oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		defer term.Restore(int(os.Stdin.Fd()), oldState)
+	case OS == "darwin" || OS == "linux":
+		exec.Command("stty", "-F", "/dev/tty", "cbreak", "min", "1").Run() // disable input buffering
+		exec.Command("stty", "-F", "/dev/tty", "-echo").Run()              // do not display entered characters on the screen
+		defer exec.Command("stty", "-F", "/dev/tty", "echo").Run()
+	default:
+		fmt.Printf("%s.\n", OS)
+		return
+	}
 
 	fmt.Printf("\033[H\033[2J\n---- CONTROLS ----\nw = up\ns = down\na = left\nd = right\n\np = pause\nq = quit\n\n\nChoose the difficulty by resizing the window.\nSmaller window leads to smaller board;\nfaster snake, bigger window leads to bigger board and slower snake.\n\n\n\nPress any key to start ...")
 	ch := make([]byte, 1)
-	_, err = os.Stdin.Read(ch)
+	_, err := os.Stdin.Read(ch)
 	if err != nil {
 		fmt.Println(err)
 		return
