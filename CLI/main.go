@@ -10,7 +10,7 @@ import (
 	"golang.org/x/term"
 )
 
-// constants
+// CONSTANTS ========================================================
 const UP = "w"
 const DOWN = "s"
 const LEFT = "a"
@@ -20,7 +20,7 @@ const ESC = "q"
 const F_POINTS = 10
 const S_POINTS = 100
 
-// structures
+// STRUCTURES =======================================================
 type board struct {
 	xy [][]string
 }
@@ -39,7 +39,7 @@ type fruit struct {
 	value string
 }
 
-// global variables
+// GLOBAL VARIABLES =================================================
 var BL = 0 // Board Length
 var BH = 0 // Board Height
 
@@ -52,7 +52,7 @@ var f *fruit = new(fruit)
 
 var input_channel = make(chan string, 5)
 
-// functions
+// FUNCTIONS ========================================================
 func init_board() {
 	b.xy = make([][]string, BL)
 	for i := range b.xy {
@@ -122,35 +122,16 @@ func draw() {
 	}
 }
 
-// updates the snake inside the board
-func upadate_board() {
-	var node *node
-
-	node = s.first.next
-	b.xy[s.first.x][s.first.y] = "o"
-
-	for {
-		b.xy[node.x][node.y] = "x"
-		if node.next != nil {
-
-			node = node.next
-		} else {
-			break
-		}
-	}
-}
-
 func update_snake_position() {
 	// checks for collision with snake
 	if b.xy[s.first.x+s.hx][s.first.y+s.hy] == "x" {
 		game_over = true
 		return
 	}
-	n := node{x: s.first.x + s.hx, y: s.first.y + s.hy, next: s.first}
-	s.first = &n
+	add_node(s.first.x+s.hx, s.first.y+s.hy)
 
 	// checks for collision with borders
-	if n.x == 0 || n.x == BL-1 || n.y == 0 || n.y == BH-1 {
+	if s.first.x == 0 || s.first.x == BL-1 || s.first.y == 0 || s.first.y == BH-1 {
 		game_over = true
 		return
 	}
@@ -169,16 +150,34 @@ func update_snake_position() {
 	}
 }
 
+// updates the snake inside the board
+func update_board() {
+	var node *node
+
+	node = s.first.next
+	b.xy[s.first.x][s.first.y] = "o"
+
+	for {
+		b.xy[node.x][node.y] = "x"
+		if node.next != nil {
+
+			node = node.next
+		} else {
+			break
+		}
+	}
+}
+
 func show_points() {
 	fmt.Printf("Points: %d", tot_points)
 }
 
-// goroutines
+// GOROUTINES =======================================================
 func game() {
 
 	for !game_over {
 		update_snake_position()
-		upadate_board()
+		update_board()
 		collect_fruit()
 		draw()
 		show_points()
@@ -273,6 +272,7 @@ func input_sampler() {
 	}
 }
 
+// MAIN =============================================================
 func main() {
 	// Init rand seed
 	rand.Seed(time.Now().UnixNano())
