@@ -93,33 +93,10 @@ func spawn_fruit() {
 	b.xy[f.x][f.y] = f.value
 }
 
-// check if the snake has collected a fruit
-func collect_fruit() {
-	if s.first.x == f.x && s.first.y == f.y {
-		if f.value == "F" {
-			tot_points += F_POINTS
-		} else {
-			tot_points += S_POINTS
-		}
-		add_node(f.x, f.y)
-		spawn_fruit()
-	}
-}
-
 // add a snake node on the head
 func add_node(x, y int) {
 	n := node{x: x, y: y, next: s.first}
 	s.first = &n
-}
-
-func draw() {
-	fmt.Printf("\033[1;0H")
-	for y := 0; y < BH; y++ {
-		for x := 0; x < BL; x++ {
-			fmt.Printf("%s", b.xy[x][y])
-		}
-		fmt.Printf("\n")
-	}
 }
 
 func update_snake_position() {
@@ -165,6 +142,29 @@ func update_board() {
 		} else {
 			break
 		}
+	}
+}
+
+// check if the snake has collected a fruit
+func collect_fruit() {
+	if s.first.x == f.x && s.first.y == f.y {
+		if f.value == "F" {
+			tot_points += F_POINTS
+		} else {
+			tot_points += S_POINTS
+		}
+		add_node(f.x, f.y)
+		spawn_fruit()
+	}
+}
+
+func draw() {
+	fmt.Printf("\033[1;0H")
+	for y := 0; y < BH; y++ {
+		for x := 0; x < BL; x++ {
+			fmt.Printf("%s", b.xy[x][y])
+		}
+		fmt.Printf("\n")
 	}
 }
 
