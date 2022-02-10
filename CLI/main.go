@@ -297,18 +297,6 @@ func main() {
 
 	// Check OS
 	OS = runtime.GOOS
-	switch OS {
-	case "windows":
-		fmt.Println("Windows")
-	case "darwin":
-		fmt.Println("MAC operating system")
-	case "linux":
-		fmt.Println("Linux")
-	default:
-		fmt.Printf("%s.\n", OS)
-		return
-	}
-
 	// switch stdin into 'raw' mode
 	switch {
 	case OS == "windows":
