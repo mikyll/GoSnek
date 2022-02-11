@@ -23,29 +23,29 @@ const ESC = "q"
 const F_POINTS = 10
 const S_POINTS = 100
 
-// color scheme 1
-const BORDER1 = "*"
-const BLANK1 = " "
-const HEAD1 = "o"
-const BODY1 = "x"
+// color scheme 0 (default)
+const BORDER0 = "*"
+const BLANK0 = " "
+const HEAD0 = "o"
+const BODY0 = "x"
+const F0 = "F"
+const S0 = "S"
+
+// color schemes 1
+const BORDER1 = "\033[37;47m \033[0m"
+const BLANK1 = "\033[30;40m \033[0m"
+const HEAD1 = "\033[97;107m \033[0m"
+const BODY1 = "\033[37;47m \033[0m"
 const F1 = "F"
 const S1 = "S"
 
-// color schemes 2
+// color scheme 2
 const BORDER2 = "\033[37;47m \033[0m"
 const BLANK2 = "\033[30;40m \033[0m"
-const HEAD2 = "\033[97;107m \033[0m"
-const BODY2 = "\033[37;47m \033[0m"
-const F2 = "F"
-const S2 = "S"
-
-// color scheme 3
-const BORDER3 = "\033[37;47m \033[0m"
-const BLANK3 = "\033[30;40m \033[0m"
-const HEAD3 = "\033[32;42m \033[0m"
-const BODY3 = "\033[92;102m \033[0m"
-const F3 = "\033[30;41mF\033[0m"
-const S3 = "\033[30;43mS\033[0m"
+const HEAD2 = "\033[32;42m \033[0m"
+const BODY2 = "\033[92;102m \033[0m"
+const F2 = "\033[30;41mF\033[0m"
+const S2 = "\033[30;43mS\033[0m"
 
 // STRUCTURES =======================================================
 type board struct {
@@ -71,7 +71,9 @@ var OS = "" // Operating System
 var BL = 0  // Board Length
 var BH = 0  // Board Height
 
-// default elements
+var COLOR_SCHEME = 2
+
+// board elements
 var BORDER = "*"
 var BLANK = " "
 var HEAD = "o"
@@ -110,10 +112,10 @@ func init_board() {
 func init_snake() {
 	s.hx = -1
 	s.hy = 0
-	n4 := node{x: BL/2 + 3, y: BH / 2, next: nil}
-	n3 := node{x: BL/2 + 2, y: BH / 2, next: &n4}
-	n2 := node{x: BL/2 + 1, y: BH / 2, next: &n3}
-	n1 := node{x: BL / 2, y: BH / 2, next: &n2}
+	n4 := node{x: BL/2 + 1, y: BH / 2, next: nil}
+	n3 := node{x: BL / 2, y: BH / 2, next: &n4}
+	n2 := node{x: BL/2 - 1, y: BH / 2, next: &n3}
+	n1 := node{x: BL/2 - 2, y: BH / 2, next: &n2}
 	s.first = &n1
 }
 
@@ -207,6 +209,71 @@ func draw() {
 	}
 }
 
+/*
+ SSSS  N   N   AAAA  K   K  EEEEE
+S      NN  N  A   A  K  K   E
+ SSS   N N N  A   A  KKK    EEE
+    S  N  NN  AAAAA  K  K   E
+SSSS   N   N  A   A  K   K  EEEEE
+*/
+
+func print_controls() {
+	fmt.Print("\033[H\033[2J")
+	for j := 0; j < BH; j++ {
+		for i := 0; i < BL; i++ {
+			switch {
+			case i == 0 || i == BL-1 || j == 0 || j == BH-1:
+				fmt.Print(BORDER)
+
+			case j == 2 && i == BL/2-16:
+				fmt.Printf(" \033[37;47mSSSS\033[0m  \033[37;47mN\033[0m   \033[37;47mN\033[0m   \033[37;47mAAAA\033[0m  \033[37;47mK\033[0m   \033[37;47mK\033[0m  \033[37;47mEEEEE\033[0m")
+				i += 32
+			case j == 3 && i == BL/2-16:
+				fmt.Printf("\033[37;47mS\033[0m      \033[37;47mNN\033[0m  \033[37;47mN\033[0m  \033[37;47mA\033[0m   \033[37;47mA\033[0m  \033[37;47mK\033[0m  \033[37;47mK\033[0m   \033[37;47mE\033[0m    ")
+				i += 32
+			case j == 4 && i == BL/2-16:
+				fmt.Printf(" \033[37;47mSSS\033[0m   \033[37;47mN\033[0m \033[37;47mN\033[0m \033[37;47mN\033[0m  \033[37;47mA\033[0m   \033[37;47mA\033[0m  \033[37;47mKKK\033[0m    \033[37;47mEEE\033[0m  ")
+				i += 32
+			case j == 5 && i == BL/2-16:
+				fmt.Printf("    \033[37;47mS\033[0m  \033[37;47mN\033[0m  \033[37;47mNN\033[0m  \033[37;47mAAAAA\033[0m  \033[37;47mK\033[0m  \033[37;47mK\033[0m   \033[37;47mE\033[0m    ")
+				i += 32
+			case j == 6 && i == BL/2-16:
+				fmt.Printf("\033[37;47mSSSS\033[0m   \033[37;47mN\033[0m   \033[37;47mN\033[0m  \033[37;47mA\033[0m   \033[37;47mA\033[0m  \033[37;47mK\033[0m   \033[37;47mK\033[0m  \033[37;47mEEEEE\033[0m")
+				i += 32
+
+			case i == BL/2-2 && j == BH/2:
+				fmt.Print(HEAD + BODY + BODY + BODY)
+				i += 3
+
+			case j == BH/2+2 && i == BL/2-4:
+				fmt.Printf("CONTROLS")
+				i += 7
+			case j == BH/2+4 && i == BL/2-10:
+				fmt.Printf("\U00002191 w = up")
+				i += 7
+			case j == BH/2+5 && i == BL/2-10:
+				fmt.Printf("\U00002193 s = down")
+				i += 9
+			case j == BH/2+6 && i == BL/2-10:
+				fmt.Printf("\U00002190 a = left")
+				i += 9
+			case j == BH/2+7 && i == BL/2-10:
+				fmt.Printf("\U00002192 d = right")
+				i += 10
+			case j == BH/2+5 && i == BL/2+5:
+				fmt.Printf("p = pause")
+				i += 8
+			case j == BH/2+6 && i == BL/2+5:
+				fmt.Printf("q = quit")
+				i += 7
+			default:
+				fmt.Print(BLANK)
+			}
+		}
+		fmt.Printf("\n")
+	}
+}
+
 func print_game_over() {
 	fmt.Print("\033[H\033[2J")
 	for j := 0; j < BH; j++ {
@@ -266,13 +333,9 @@ func game() {
 					s.hy = 0
 				}
 			case PAUSE:
-				b.xy[BL/2-4][BH/2-1] = " "
-				b.xy[BL/2-3][BH/2-1] = " "
-				b.xy[BL/2-2][BH/2-1] = " "
-				b.xy[BL/2-1][BH/2-1] = " "
-				b.xy[BL/2][BH/2-1] = " "
-				b.xy[BL/2+1][BH/2-1] = " "
-				b.xy[BL/2+2][BH/2-1] = " "
+				for i := -4; i < 2; i++ {
+					b.xy[BL/2+i][BH/2-1] = " "
+				}
 				b.xy[BL/2-4][BH/2] = " "
 				b.xy[BL/2-3][BH/2] = "P"
 				b.xy[BL/2-2][BH/2] = "A"
@@ -280,13 +343,9 @@ func game() {
 				b.xy[BL/2][BH/2] = "S"
 				b.xy[BL/2+1][BH/2] = "E"
 				b.xy[BL/2+2][BH/2] = " "
-				b.xy[BL/2-4][BH/2+1] = " "
-				b.xy[BL/2-3][BH/2+1] = " "
-				b.xy[BL/2-2][BH/2+1] = " "
-				b.xy[BL/2-1][BH/2+1] = " "
-				b.xy[BL/2][BH/2+1] = " "
-				b.xy[BL/2+1][BH/2+1] = " "
-				b.xy[BL/2+2][BH/2+1] = " "
+				for i := -4; i < 2; i++ {
+					b.xy[BL/2+i][BH/2+1] = " "
+				}
 				draw()
 				x = <-input_channel
 				if x == ESC {
@@ -344,6 +403,14 @@ func input_sampler() {
 
 // MAIN =============================================================
 func main() {
+	// Set color scheme
+	BORDER = BORDER2
+	BLANK = BLANK2
+	HEAD = HEAD2
+	BODY = BODY2
+	F = F2
+	S = S2
+
 	// Init rand seed
 	rand.Seed(time.Now().UnixNano())
 
@@ -351,6 +418,12 @@ func main() {
 	if err := termbox.Init(); err != nil {
 		panic(err)
 	}
+	// Get window size
+	w, h := termbox.Size()
+	termbox.Close()
+	//fmt.Println(w, h) // test
+	BL = w
+	BH = h - 1
 
 	// Check OS
 	OS = runtime.GOOS
@@ -374,7 +447,8 @@ func main() {
 	}
 
 	// Show controls
-	fmt.Printf("\033[H\033[2J\n---- CONTROLS ----\nw = up\ns = down\na = left\nd = right\n\np = pause\nq = quit\n\n\nChoose the difficulty by resizing the window.\nSmaller window leads to smaller board;\nfaster snake, bigger window leads to bigger board and slower snake.\n\n\n\nPress any key to start ...")
+	print_controls()
+	//fmt.Printf("\033[H\033[2J\n---- CONTROLS ----\nw = up\ns = down\na = left\nd = right\n\np = pause\nq = quit\n\n\nChoose the difficulty by resizing the window and restarting the program.\nSmaller window leads to smaller board;\nfaster snake, bigger window leads to bigger board and slower snake.\n\n\n\nPress any key to start ...")
 	ch := make([]byte, 1)
 	_, err := os.Stdin.Read(ch)
 	if err != nil {
@@ -384,21 +458,6 @@ func main() {
 	if string(ch[0]) == "q" {
 		return
 	}
-
-	// Get window size
-	w, h := termbox.Size()
-	termbox.Close()
-	//fmt.Println(w, h) // test
-	BL = w
-	BH = h - 1
-
-	// Set color scheme
-	BORDER = BORDER3
-	BLANK = BLANK3
-	HEAD = HEAD3
-	BODY = BODY3
-	F = F3
-	S = S3
 
 	init_board()
 	init_snake()
