@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"strconv"
 	"time"
 
 	"github.com/nsf/termbox-go"
@@ -21,6 +22,12 @@ const PAUSE = "p"
 const ESC = "q"
 const F_POINTS = 10
 const S_POINTS = 100
+
+const BORDER = "*" // "*"
+const HEAD = "o"   // "\033[31;1;96mo\033[0m"
+const BODY = "x"   // "\033[31;1;96mx\033[0m"
+const F = "F"      // "\033[31;1;91mF\033[0m"
+const S = "S"      // "\033[31;1;91mS\033[0m"
 
 // STRUCTURES =======================================================
 type board struct {
@@ -89,9 +96,9 @@ func spawn_fruit() {
 	f.x = rand.Intn(BL-2) + 1
 	f.y = rand.Intn(BH-2) + 1
 	if rand.Intn(100) < 10 {
-		f.value = "S"
+		f.value = S
 	} else {
-		f.value = "F"
+		f.value = F
 	}
 	b.xy[f.x][f.y] = f.value
 }
@@ -104,7 +111,7 @@ func add_node(x, y int) {
 
 func update_snake_position() {
 	// checks for collision with snake
-	if b.xy[s.first.x+s.hx][s.first.y+s.hy] == "x" {
+	if b.xy[s.first.x+s.hx][s.first.y+s.hy] == BODY {
 		game_over = true
 		return
 	}
@@ -135,10 +142,10 @@ func update_board() {
 	var node *node
 
 	node = s.first.next
-	b.xy[s.first.x][s.first.y] = "o"
+	b.xy[s.first.x][s.first.y] = HEAD
 
 	for {
-		b.xy[node.x][node.y] = "x"
+		b.xy[node.x][node.y] = BODY
 		if node.next != nil {
 
 			node = node.next
@@ -151,10 +158,13 @@ func update_board() {
 // check if the snake has collected a fruit
 func collect_fruit() {
 	if s.first.x == f.x && s.first.y == f.y {
-		if f.value == "F" {
+		if f.value == F {
 			tot_points += F_POINTS
-		} else {
+		} else if f.value == S {
 			tot_points += S_POINTS
+		} else {
+			// Error
+			return
 		}
 		add_node(f.x, f.y)
 		spawn_fruit()
@@ -166,6 +176,27 @@ func draw() {
 	for y := 0; y < BH; y++ {
 		for x := 0; x < BL; x++ {
 			fmt.Printf("%s", b.xy[x][y])
+		}
+		fmt.Printf("\n")
+	}
+}
+
+func print_game_over() {
+	fmt.Print("\033[H\033[2J")
+	for j := 0; j < BH; j++ {
+		for i := 0; i < BL; i++ {
+			switch {
+			case i == 0 || i == BL-1 || j == 0 || j == BH-1:
+				fmt.Printf("*")
+			case j == BH/2 && i == BL/2-5:
+				fmt.Printf("GAME OVER")
+				i += 8
+			case j == BH/2+2 && i == BL/2-(8+(len(strconv.Itoa(tot_points))/2)):
+				fmt.Printf("Total Points: %d", tot_points)
+				i += 13 + len(strconv.Itoa(tot_points))
+			default:
+				fmt.Printf(" ")
+			}
 		}
 		fmt.Printf("\n")
 	}
@@ -287,6 +318,7 @@ func input_sampler() {
 
 // MAIN =============================================================
 func main() {
+	fmt.Printf("")
 	// Init rand seed
 	rand.Seed(time.Now().UnixNano())
 
@@ -322,10 +354,13 @@ func main() {
 		fmt.Println(err)
 		return
 	}
+	if string(ch[0]) == "q" {
+		return
+	}
 
 	w, h := termbox.Size()
 	termbox.Close()
-	//fmt.Println(w, h) // test
+	fmt.Println(w, h) // test
 	BL = w
 	BH = h - 1
 
@@ -336,6 +371,5 @@ func main() {
 	go input_sampler()
 	game()
 
-	fmt.Print("\033[H\033[2J")
-	fmt.Printf("\n\n\nGAME OVER\n\n\nTotal points: %d\n\n\n", tot_points)
+	print_game_over()
 }
