@@ -23,11 +23,29 @@ const ESC = "q"
 const F_POINTS = 10
 const S_POINTS = 100
 
-const BORDER = "*" // "*"
-const HEAD = "o"   // "\033[31;1;96mo\033[0m"
-const BODY = "x"   // "\033[31;1;96mx\033[0m"
-const F = "F"      // "\033[31;1;91mF\033[0m"
-const S = "S"      // "\033[31;1;91mS\033[0m"
+// color scheme 1
+const BORDER1 = "*"
+const BLANK1 = " "
+const HEAD1 = "o"
+const BODY1 = "x"
+const F1 = "F"
+const S1 = "S"
+
+// color schemes 2
+const BORDER2 = "\033[37;47m \033[0m"
+const BLANK2 = "\033[30;40m \033[0m"
+const HEAD2 = "\033[97;107m \033[0m"
+const BODY2 = "\033[37;47m \033[0m"
+const F2 = "F"
+const S2 = "S"
+
+// color scheme 3
+const BORDER3 = "\033[37;47m \033[0m"
+const BLANK3 = "\033[30;40m \033[0m"
+const HEAD3 = "\033[32;42m \033[0m"
+const BODY3 = "\033[92;102m \033[0m"
+const F3 = "\033[30;41mF\033[0m"
+const S3 = "\033[30;43mS\033[0m"
 
 // STRUCTURES =======================================================
 type board struct {
@@ -53,6 +71,14 @@ var OS = "" // Operating System
 var BL = 0  // Board Length
 var BH = 0  // Board Height
 
+// default elements
+var BORDER = "*"
+var BLANK = " "
+var HEAD = "o"
+var BODY = "x"
+var F = "F"
+var S = "S"
+
 var game_over = false
 var tot_points = 0
 
@@ -72,9 +98,9 @@ func init_board() {
 	for i := 0; i < BL; i++ {
 		for j := 0; j < BH; j++ {
 			if i == 0 || i == BL-1 || j == 0 || j == BH-1 {
-				b.xy[i][j] = "*"
+				b.xy[i][j] = BORDER
 			} else {
-				b.xy[i][j] = " "
+				b.xy[i][j] = BLANK
 			}
 		}
 	}
@@ -130,7 +156,7 @@ func update_snake_position() {
 			prev_node = node
 			node = node.next
 		} else {
-			b.xy[node.x][node.y] = " "
+			b.xy[node.x][node.y] = BLANK
 			prev_node.next = nil
 			break
 		}
@@ -187,15 +213,15 @@ func print_game_over() {
 		for i := 0; i < BL; i++ {
 			switch {
 			case i == 0 || i == BL-1 || j == 0 || j == BH-1:
-				fmt.Printf("*")
-			case j == BH/2 && i == BL/2-5:
+				fmt.Print(BORDER)
+			case j == BH/2-1 && i == BL/2-5:
 				fmt.Printf("GAME OVER")
 				i += 8
-			case j == BH/2+2 && i == BL/2-(8+(len(strconv.Itoa(tot_points))/2)):
+			case j == BH/2+1 && i == BL/2-(8+(len(strconv.Itoa(tot_points))/2)):
 				fmt.Printf("Total Points: %d", tot_points)
 				i += 13 + len(strconv.Itoa(tot_points))
 			default:
-				fmt.Printf(" ")
+				fmt.Print(BLANK)
 			}
 		}
 		fmt.Printf("\n")
@@ -318,7 +344,6 @@ func input_sampler() {
 
 // MAIN =============================================================
 func main() {
-	fmt.Printf("")
 	// Init rand seed
 	rand.Seed(time.Now().UnixNano())
 
@@ -329,7 +354,8 @@ func main() {
 
 	// Check OS
 	OS = runtime.GOOS
-	// switch stdin into 'raw' mode
+
+	// Switch stdin into 'raw' mode
 	switch {
 	case OS == "windows":
 		oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
@@ -347,6 +373,7 @@ func main() {
 		return
 	}
 
+	// Show controls
 	fmt.Printf("\033[H\033[2J\n---- CONTROLS ----\nw = up\ns = down\na = left\nd = right\n\np = pause\nq = quit\n\n\nChoose the difficulty by resizing the window.\nSmaller window leads to smaller board;\nfaster snake, bigger window leads to bigger board and slower snake.\n\n\n\nPress any key to start ...")
 	ch := make([]byte, 1)
 	_, err := os.Stdin.Read(ch)
@@ -358,18 +385,29 @@ func main() {
 		return
 	}
 
+	// Get window size
 	w, h := termbox.Size()
 	termbox.Close()
-	fmt.Println(w, h) // test
+	//fmt.Println(w, h) // test
 	BL = w
 	BH = h - 1
+
+	// Set color scheme
+	BORDER = BORDER3
+	BLANK = BLANK3
+	HEAD = HEAD3
+	BODY = BODY3
+	F = F3
+	S = S3
 
 	init_board()
 	init_snake()
 	spawn_fruit()
 
+	// Start game
 	go input_sampler()
 	game()
 
+	// Game Over
 	print_game_over()
 }
