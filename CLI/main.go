@@ -291,7 +291,9 @@ func print_game_over() {
 				fmt.Print(BLANK)
 			}
 		}
-		fmt.Printf("\n")
+		if j < BH-1 {
+			fmt.Printf("\n")
+		}
 	}
 }
 
