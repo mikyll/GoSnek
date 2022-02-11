@@ -123,6 +123,30 @@ func init_snake() {
 func spawn_fruit() {
 	f.x = rand.Intn(BL-2) + 1
 	f.y = rand.Intn(BH-2) + 1
+
+	var found = false
+	// spawn algorithm (to prevent the fruit from spawning inside the snake)
+	/*
+		We get a random int (starting point, if it's one the snake, we start iterating until we get an empty position)
+	*/
+	for j := f.y + 1; f.y != j && !found; j++ {
+		for i := f.x + 1; f.x != i; i++ {
+			if b.xy[i][j] != HEAD && b.xy[i][j] != BODY {
+				found = true
+				break
+			}
+			if f.x == BL-1 {
+				f.x = 1
+			}
+		}
+		if found {
+			break
+		}
+		if f.y == BH-1 {
+			f.y = 1
+		}
+	}
+
 	if rand.Intn(100) < 10 {
 		f.value = S
 	} else {
