@@ -10,5 +10,5 @@
 </p>
 
 ### References
-- [Read character from stdin without pressing enter](https://stackoverflow.com/a/70627571)
+- [Read character from stdin without pressing enter](https://stackoverflow.com/questions/15159118/read-a-character-from-standard-input-in-go-without-pressing-enter/): [Windows](https://stackoverflow.com/a/70627571), [UNIX](https://stackoverflow.com/a/17278776)
 - [ANSI escape codes](https://en.wikipedia.org/wiki/ANSI_escape_code)
