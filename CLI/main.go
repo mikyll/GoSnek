@@ -129,6 +129,12 @@ func spawn_fruit() {
 	/*
 		We get a random int (starting point, if it's one the snake, we start iterating until we get an empty position)
 	*/
+	if f.x == BL-1 {
+
+	}
+	if f.y == BH-1 {
+
+	}
 	for j := f.y + 1; f.y != j && !found; j++ {
 		for i := f.x + 1; f.x != i; i++ {
 			if b.xy[i][j] != HEAD && b.xy[i][j] != BODY {
@@ -199,7 +205,6 @@ func update_board() {
 	for {
 		b.xy[node.x][node.y] = BODY
 		if node.next != nil {
-
 			node = node.next
 		} else {
 			break
@@ -266,8 +271,13 @@ func print_controls() {
 				i += 32
 
 			case i == BL/2-2 && j == BH/2:
-				fmt.Print(HEAD + BODY + BODY + BODY)
-				i += 3
+				fmt.Print(HEAD)
+				k := 0
+				for node := s.first; node.next != nil; k++ {
+					fmt.Print(BODY)
+					node = node.next
+				}
+				i += k
 
 			case j == BH/2+2 && i == BL/2-4:
 				fmt.Printf("CONTROLS")
@@ -451,6 +461,8 @@ func main() {
 	BL = w
 	BH = h - 1
 
+	// TEST
+
 	// Check OS
 	OS = runtime.GOOS
 
@@ -472,6 +484,11 @@ func main() {
 		return
 	}
 
+	// Init board
+	init_board()
+	init_snake()
+	spawn_fruit()
+
 	// Show controls
 	print_controls()
 	ch := make([]byte, 1)
@@ -483,10 +500,6 @@ func main() {
 	if string(ch[0]) == "q" {
 		return
 	}
-
-	init_board()
-	init_snake()
-	spawn_fruit()
 
 	// Start game
 	go input_sampler()
