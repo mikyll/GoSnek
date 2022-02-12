@@ -461,7 +461,7 @@ func main() {
 	// Get window size
 	w, h := termbox.Size()
 	termbox.Close()
-	fmt.Println(w, h) // test
+	//fmt.Println(w, h) // test
 	BL = w
 	BH = h - 1
 
