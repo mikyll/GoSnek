@@ -19,6 +19,7 @@ if b.xy[f.x][f.y] == HEAD || b.xy[f.x][f.y] == BODY {
   if f.y == 1 || f.y == BH-1 {
     f.y = BH / 2
   }
+  found := false
   j := f.y
   i := f.x
   for f.y += 1; f.y != j; f.y++ {
