@@ -19,7 +19,7 @@ const DOWN = "s"
 const LEFT = "a"
 const RIGHT = "d"
 const PAUSE = "p"
-const ESC = "q"
+const QUIT = "q"
 const F_POINTS = 10
 const S_POINTS = 100
 
@@ -287,22 +287,22 @@ func print_controls() {
 				fmt.Printf("CONTROLS")
 				i += 7
 			case j == BH/2+4 && i == BL/2-10:
-				fmt.Printf("\U00002191 w = up")
+				fmt.Printf("\U00002191 %s = up", UP)
 				i += 7
 			case j == BH/2+5 && i == BL/2-10:
-				fmt.Printf("\U00002193 s = down")
+				fmt.Printf("\U00002193 %s = down", DOWN)
 				i += 9
 			case j == BH/2+6 && i == BL/2-10:
-				fmt.Printf("\U00002190 a = left")
+				fmt.Printf("\U00002190 %s = left", LEFT)
 				i += 9
 			case j == BH/2+7 && i == BL/2-10:
-				fmt.Printf("\U00002192 d = right")
+				fmt.Printf("\U00002192 %s = right", RIGHT)
 				i += 10
 			case j == BH/2+5 && i == BL/2+5:
-				fmt.Printf("p = pause")
+				fmt.Printf("%s = pause", PAUSE)
 				i += 8
 			case j == BH/2+6 && i == BL/2+5:
-				fmt.Printf("q = quit")
+				fmt.Printf("%s = quit", QUIT)
 				i += 7
 			default:
 				fmt.Print(BLANK)
@@ -388,7 +388,7 @@ func game() {
 				}
 				draw()
 				x = <-input_channel
-				if x == ESC {
+				if x == QUIT {
 					return
 				}
 				b.xy[BL/2-3][BH/2] = " "
@@ -396,10 +396,10 @@ func game() {
 				b.xy[BL/2-1][BH/2] = " "
 				b.xy[BL/2][BH/2] = " "
 				b.xy[BL/2+1][BH/2] = " "
-			case ESC:
+			case QUIT:
 				return
 			default:
-				fmt.Printf("[INPUT] Input %s not valid. Press 'q' to quit\n", x)
+				fmt.Printf("[INPUT] Input %s not valid. Press '%s' to quit\n", x, QUIT)
 			}
 		default:
 			continue
@@ -499,7 +499,7 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	if string(ch[0]) == "q" {
+	if string(ch[0]) == QUIT {
 		return
 	}
 
