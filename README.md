@@ -1,4 +1,4 @@
-<h1 align="center">go-snake 🐍</h1>
+<h1 align="center">GoSnek 🐍</h1>
 <p align="center">
   Go CLI implementation of Snake game, using channels.<br/>
   NB: this code works only with ANSI terminals.
