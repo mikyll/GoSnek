@@ -6,7 +6,7 @@
           
 <h2 align="center">Demo</h2>
 <p align="center">
-  <img alt="Demo" src="https://github.com/mikyll/go-snake/blob/main/gfx/cli-snake.gif"/><br/>
+  <img alt="Demo" src="https://github.com/mikyll/GoSnek/blob/main/gfx/cli-snake.gif"/><br/>
   Resize the terminal window to change the "difficulty".
 </p>
 
