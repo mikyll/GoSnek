@@ -330,7 +330,7 @@ func print_game_over() {
 			}
 		}
 		if j < BH-1 {
-			fmt.Printf("\n")
+			fmt.Printf("\n\033[0m")
 		}
 	}
 }
