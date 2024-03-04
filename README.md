@@ -1,8 +1,18 @@
-<h1 align="center">GoSnek 🐍</h1>
-<p align="center">
+<div align="center">
+
+  [![GPL-3.0 License][license-shield]][license-url]
+  [![Size][size-shield]][size-url]
+  [![Issues][issues-shield]][issues-url]
+  [![Stars][stars-shield]][stars-url]\
+  [![Go][go-shield]][go-url]
+  [![VS Code][vs-code-shield]][vs-code-url]
+
+# GoSnek 🐍
+<p>
   Go CLI implementation of Snake game, using channels.<br/>
   NB: this code works only with ANSI terminals.
-</p>
+
+</div>
           
 <h2 align="center">Demo</h2>
 <p align="center">
@@ -56,3 +66,31 @@ if b.xy[f.x][f.y] == HEAD || b.xy[f.x][f.y] == BODY {
 ### References
 - [Read character from stdin without pressing enter](https://stackoverflow.com/questions/15159118/read-a-character-from-standard-input-in-go-without-pressing-enter/): [Windows](https://stackoverflow.com/a/70627571), [UNIX](https://stackoverflow.com/a/17278776)
 - [ANSI escape codes](https://en.wikipedia.org/wiki/ANSI_escape_code)
+
+<div align="center">
+
+[![LinkedIn][linkedin-shield]][linkedin-url]
+[![GitHub followers][github-shield]][github-url]
+  
+</div>
+
+[downloads-shield]: https://img.shields.io/github/downloads/mikyll/GoSnek/total
+[downloads-url]: https://github.com/mikyll/GoSnek/releases/latest
+[license-shield]: https://img.shields.io/github/license/mikyll/GoSnek
+[license-url]: https://github.com/mikyll/GoSnek/blob/main/LICENSE
+[size-shield]: 	https://img.shields.io/github/repo-size/mikyll/GoSnek
+[size-url]: https://github.com/mikyll/GoSnek
+[issues-shield]: https://img.shields.io/github/issues/mikyll/GoSnek
+[issues-url]: https://github.com/mikyll/GoSnek/issues
+[stars-shield]: https://custom-icon-badges.herokuapp.com/github/stars/mikyll/GoSnek?logo=star&logoColor=yellow&style=flat
+[stars-url]: https://github.com/mikyll/GoSnek/stargazers
+
+[go-shield]: https://img.shields.io/badge/Go-%2300ADD8.svg?logo=go&logoColor=white
+[go-url]: https://go.dev/
+[vs-code-shield]:  https://img.shields.io/badge/VS%20Code-0078d7.svg?logo=visual-studio-code&logoColor=white
+[vs-code-url]: https://code.visualstudio.com/
+
+[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?logo=linkedin&colorB=0077B5
+[linkedin-url]: https://www.linkedin.com/in/michele-righi/?locale=en_US
+[github-shield]: https://img.shields.io/github/followers/mikyll.svg?style=social&label=Follow
+[github-url]: https://github.com/mikyll
